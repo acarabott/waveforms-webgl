@@ -78,7 +78,7 @@ function loadShader (gl, type, source) {
   return shader;
 }
 
-function main(gl, shaderUrls, callback) {
+function main(gl, shaderUrls) {
   // check we have vert and frag shaders
   for (const key of ['vert', 'frag']) {
     if (!shaderUrls.hasOwnProperty(key)) {
@@ -97,14 +97,12 @@ function main(gl, shaderUrls, callback) {
     );
   });
 
-  // once loaded, init shaders and run callback
-  Promise.all(promises).then(() => {
+  // once loaded, init shaders
+  return Promise.all(promises).then(() => {
     if (!initShaders(gl, srcs['vert'], srcs['frag'])) {
       console.log('failed to init shaders');
       return;
     }
-
-    callback();
   }, () => {
     console.log('failed to load shaders');
   });

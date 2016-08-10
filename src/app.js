@@ -5,29 +5,37 @@ document.body.appendChild(canvas);
 
 const gl = canvas.getContext('webgl');
 
-function render() {
+const g_points = [];
+
+function setup() {
   const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
   const a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
-
-  const [x, y] = Array.from(Array(2)).map(i => {
-    return (Math.random() * 2.0) - 1.0;
-  });
-  // gl.vertexAttrib3f(a_Position, x, y, 0.0);
-  const xy = new Float32Array([x, y]);
-  gl.vertexAttrib2fv(a_Position, xy);
-
-  const min = 5;
-  const max = 100;
-  gl.vertexAttrib1f(a_PointSize, (Math.random() * (max - min)) + min);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  gl.drawArrays(gl.POINTS, 0, 1);
-  requestAnimationFrame(render);
-};
+  canvas.addEventListener('mousedown', (event) => {
+    const rect = event.target.getBoundingClientRect();
+    const halfW = canvas.width / 2;
+    const halfH = canvas.height / 2;
+    const x = ((event.clientX - rect.left) - halfW) / halfW;
+    const y = (halfH - (event.clientY - rect.top)) / halfH;
+
+    [x, y].forEach(p => g_points.push({x, y}));
+
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    g_points.forEach(p => {
+      gl.vertexAttrib1f(a_PointSize, (Math.random() * 20) + 5);
+      gl.vertexAttrib3f(a_Position, p.x, p.y, 0.0);
+      gl.drawArrays(gl.POINTS, 0, 1);
+    });
+  });
+}
+
 
 main(gl, {
-  'vert': 'shaders/helloPoint2.vert',
-  'frag': 'shaders/helloPoint2.frag'
-}, render);
+  'vert': 'shaders/clickedPoint.vert',
+  'frag': 'shaders/clickedPoint.frag'
+}).then(() => {
+  setup();
+});
