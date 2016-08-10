@@ -31,45 +31,44 @@ function initVertexBuffers (gl) {
   return n;
 }
 
-function draw (gl, comms, n, mul) {
-  // clear
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
-  // set point attributes
-  gl.vertexAttrib1f(comms.a_PointSize, gl.canvas.width / n);
-  gl.uniform4f(comms.u_FragColor, 0.0, 0.4, 0.8, 0.9);
-
-  // apply mul
-  gl.uniform1f(comms.u_Mul, mul);
-
-  // draw
-  gl.drawArrays(gl.POINTS, 0, n);
-}
-
+let draw;
 function main() {
-  const comms = {
-    'a_PointSize': gl.getAttribLocation(gl.program, 'a_PointSize'),
-    'u_FragColor': gl.getUniformLocation(gl.program, 'u_FragColor'),
-    'u_Mul': gl.getUniformLocation(gl.program, 'u_Mul')
-  };
-
+  const a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
+  const u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+  const u_Mul = gl.getUniformLocation(gl.program, 'u_Mul');
   const n = initVertexBuffers(gl);
-  const mul = 1.0;
+  const pointSize = canvas.width / n;
+  const initMul = 1.0;
+
+  draw = (mul) => {
+    // clear
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    // set point attributes
+    gl.vertexAttrib1f(a_PointSize, pointSize);
+    gl.uniform4f(u_FragColor, 0.0, 0.4, 0.8, 0.9);
+
+    // apply mul
+    gl.uniform1f(u_Mul, mul);
+
+    // draw
+    gl.drawArrays(gl.POINTS, 0, n);
+  };
 
   const slider = document.createElement('input');
   slider.type = 'range';
   slider.style['-webkit-appearance'] = 'slider-vertical';
-  slider.value = mul;
+  slider.value = initMul;
   slider.min = 0.0;
   slider.max = 1.0;
   slider.step = 0.001;
   slider.addEventListener('input', event => {
-    draw(gl, comms, n, event.target.valueAsNumber)
+    draw(event.target.valueAsNumber)
   });
   document.body.appendChild(slider);
 
-  draw(gl, comms, n, mul);
+  draw(initMul);
 }
 
 setupGl(gl, shaders).then(main);
