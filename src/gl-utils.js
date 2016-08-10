@@ -78,7 +78,7 @@ function loadShader (gl, type, source) {
   return shader;
 }
 
-function main(gl, shaderUrls) {
+function setupGl(gl, shaderUrls) {
   // check we have vert and frag shaders
   for (const key of ['vert', 'frag']) {
     if (!shaderUrls.hasOwnProperty(key)) {
