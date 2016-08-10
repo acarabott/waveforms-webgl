@@ -15,4 +15,4 @@ function render() {
 main(gl, {
   'vert': 'shaders/helloPoint.vert',
   'frag': 'shaders/helloPoint.frag'
-});
+}, render);
