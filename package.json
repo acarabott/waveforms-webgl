@@ -1,0 +1,21 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "gulpfile.js",
+  "dependencies": {},
+  "devDependencies": {
+    "babel-preset-es2015": "latest",
+    "clone-stats": "latest",
+    "gulp": "latest",
+    "gulp-babel": "latest",
+    "gulp-connect": "^5.0.0",
+    "gulp-livereload": "latest",
+    "gulp-sourcemaps": "latest"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Arthur Carabott",
+  "license": "MIT"
+}
