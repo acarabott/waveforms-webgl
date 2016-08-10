@@ -24,7 +24,7 @@ gulp.task('connect', function() {
 });
 
 gulp.task('watchjs', function() {
-  gulp.watch('src/*.js', ['babel']);
+  gulp.watch(['src/*.js', 'shaders/*'], ['babel']);
 });
 
 gulp.task('default', ['watchjs', 'connect']);
