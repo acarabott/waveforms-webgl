@@ -92,17 +92,18 @@ function render() {
   gl.drawArrays(gl.POINTS, 0, 1);
 };
 
-function main(vertShaderUrl, fragShaderUrl) {
+function main(shaderUrls) {
   const srcs = {};
-  const promises = [vertShaderUrl, fragShaderUrl].map(url => {
+  const promises = Object.keys(shaderUrls).map(key => {
+    const url = shaderUrls[key];
     return loadShaderSrc(url).then(
-      src => srcs[url] = src,
+      src => srcs[key] = src,
       error => console.log(error)
     );
   });
 
   Promise.all(promises).then(() => {
-    if (!initShaders(gl, srcs[vertShaderUrl], srcs[fragShaderUrl])) {
+    if (!initShaders(gl, srcs['vert'], srcs['frag'])) {
       console.log('failed to init shaders');
       return;
     }
@@ -112,4 +113,7 @@ function main(vertShaderUrl, fragShaderUrl) {
   });
 }
 
-main('shaders/helloPoint.vert', 'shaders/helloPoint.frag');
+main({
+  'vert': 'shaders/helloPoint.vert',
+  'frag': 'shaders/helloPoint.frag'
+});
