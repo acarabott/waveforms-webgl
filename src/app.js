@@ -5,19 +5,6 @@ document.body.appendChild(canvas);
 
 const gl = canvas.getContext('webgl');
 
-const VSHADER_SOURCE = `
-  void main() {
-    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
-    gl_PointSize = 10.0;
-  }
-`;
-
-const FSHADER_SOURCE = `
-  void main() {
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-  }
-`;
-
 function initShaders (gl, vshader, fshader) {
   const program = createProgram(gl, vshader, fshader);
   if (program === null) {
@@ -29,6 +16,24 @@ function initShaders (gl, vshader, fshader) {
   gl.program = program;
 
   return true;
+}
+
+function loadShaderSrc (url) {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open('GET', url);
+    request.onload = () => {
+      if (request.status === 200) {
+        resolve(request.response);
+      } else {
+        reject(Error(request.statusText));
+      }
+    };
+    request.onerror = () => {
+      reject(Error("Network error"));
+    };
+    request.send();
+  });
 }
 
 function createProgram (gl, vshader, fshader) {
@@ -80,16 +85,31 @@ function loadShader (gl, type, source) {
   return shader;
 }
 
-function main () {
-  if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
-    console.log('failed to init shaders');
-    return;
-  }
-
+function render() {
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   gl.drawArrays(gl.POINTS, 0, 1);
+};
+
+function main(vertShaderUrl, fragShaderUrl) {
+  const srcs = {};
+  const promises = [vertShaderUrl, fragShaderUrl].map(url => {
+    return loadShaderSrc(url).then(
+      src => srcs[url] = src,
+      error => console.log(error)
+    );
+  });
+
+  Promise.all(promises).then(() => {
+    if (!initShaders(gl, srcs[vertShaderUrl], srcs[fragShaderUrl])) {
+      console.log('failed to init shaders');
+      return;
+    }
+    render();
+  }, () => {
+    console.log('failed to load shaders');
+  });
 }
 
-main();
+main('shaders/helloPoint.vert', 'shaders/helloPoint.frag');
