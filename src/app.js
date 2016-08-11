@@ -34,13 +34,27 @@ function generateSine(n, freq) {
   });
 }
 
-function createVerticesFromAudio(audioBuffer) {
+function createVerticesFromAudio(audioBuffer, maxVertices) {
   const audioData = audioBuffer.getChannelData(0);
-  const n = 2;
-  return new Float32Array(audioBuffer.length * n).map((f, i) => {
-    const audioIdx = Math.floor(i / n);
-    return i % 2 === 0 ? ((audioIdx / audioBuffer.length) * 2.0) - 1.0  // x
-                       : audioData[audioIdx];                           // y
+  maxVertices = maxVertices === undefined ? audioData.length : maxVertices;
+  const numVertices = Math.min(audioBuffer.length, maxVertices);
+  const numPoints = numVertices * 2;
+  const step = Math.max(Math.floor(audioData.length / numVertices), 1);
+
+  const avgAudio = new Float32Array(numVertices).map((x, i) => {
+    const start = i * step;
+    const end = start + step;
+    const sum = audioData.slice(start, end).reduce((prev, cur) => {
+      return prev + cur;
+    }, 0);
+
+    return sum / step;
+  });
+
+  return new Float32Array(numPoints).map((f, i) => {
+    const vertIdx = Math.floor(i / 2);
+    return i % 2 === 0 ? ((i / numPoints) * 2.0) - 1.0  // x
+                       : avgAudio[vertIdx];                     // y
   });
 }
 
