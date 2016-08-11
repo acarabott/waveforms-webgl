@@ -97,7 +97,7 @@ function main() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     // set point attributes
-    gl.vertexAttrib1f(u_PointSize, pointSize);
+    gl.uniform1f(u_PointSize, pointSize);
     gl.uniform4f(u_FragColor, 0.0, 0.4, 0.8, 0.9);
 
     // apply mul
