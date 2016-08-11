@@ -48,8 +48,8 @@ function main() {
   const a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
   const u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
   const u_Mul = gl.getUniformLocation(gl.program, 'u_Mul');
-  const n = Math.floor(canvas.width * 2);
-  const initFreq = 1;
+  const n = Math.floor(canvas.width * (canvas.height / 2));
+  const initFreq = 40;
   const pointSize = canvas.width / n;
   const initMul = 1.0;
   initVertexBuffers(gl, n, initFreq);
