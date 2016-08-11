@@ -1,7 +1,10 @@
 const canvas = document.createElement('canvas');
-canvas.width = 400;
+canvas.width = 800;
 canvas.height = 400;
 document.body.appendChild(canvas);
+
+const controls = document.createElement('div');
+document.body.appendChild(controls);
 
 const gl = canvas.getContext('webgl');
 const shaders = {
@@ -11,12 +14,11 @@ const shaders = {
 
 const g_points = [];
 
-function initVertexBuffers (gl) {
-  const n = canvas.width * 100;
+function initVertexBuffers (gl, n, freq) {
   const vertices = new Float32Array(Array.from(Array(n * 2)).map((x, i) => {
     const vertexNum = Math.floor(i / 2);
     return i % 2 === 0 ? ((vertexNum / n) * 2.0) - 1.0      // x co-ordinate
-                       : Math.sin((i / n) * Math.PI * 10);  // y co-ordinate
+                       : Math.sin((i / n) * Math.PI * freq);  // y co-ordinate
   }));
   const vertexBuffer = gl.createBuffer();
 
@@ -27,8 +29,18 @@ function initVertexBuffers (gl) {
 
   gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(a_Position);
+}
 
-  return n;
+function makeSlider(min=0.0, max=1.0, value=0.5, step=0.001, action) {
+  const slider = document.createElement('input');
+  slider.type = 'range';
+  slider.style['-webkit-appearance'] = 'slider-vertical';
+  slider.min = min;
+  slider.max = max;
+  slider.value = value;
+  slider.step = step;
+  slider.addEventListener('input', action);
+  return slider;
 }
 
 let draw;
@@ -36,9 +48,11 @@ function main() {
   const a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
   const u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
   const u_Mul = gl.getUniformLocation(gl.program, 'u_Mul');
-  const n = initVertexBuffers(gl);
+  const n = Math.floor(canvas.width * 2);
+  const initFreq = 1;
   const pointSize = canvas.width / n;
   const initMul = 1.0;
+  initVertexBuffers(gl, n, initFreq);
 
   draw = (mul) => {
     // clear
@@ -56,17 +70,27 @@ function main() {
     gl.drawArrays(gl.POINTS, 0, n);
   };
 
-  const slider = document.createElement('input');
-  slider.type = 'range';
-  slider.style['-webkit-appearance'] = 'slider-vertical';
-  slider.value = initMul;
-  slider.min = 0.0;
-  slider.max = 1.0;
-  slider.step = 0.001;
-  slider.addEventListener('input', event => {
+  const mulSlider = makeSlider(0.0, 1.0, initMul, 0.001, event => {
     draw(event.target.valueAsNumber)
   });
-  document.body.appendChild(slider);
+  controls.appendChild(mulSlider);
+
+  let freqTimeout;
+  const minFreq = 1;
+  const maxFreq = 40;
+  const freqSlider = makeSlider(minFreq, maxFreq, initFreq, 0.01, event => {
+    clearTimeout(freqTimeout);
+    freqTimeout = setTimeout(() => {
+      const val = event.target.valueAsNumber;
+      const range = maxFreq - minFreq;
+      const norm = val / range;
+      const expFreq = (Math.pow(norm, 2) * range) + minFreq;
+
+      initVertexBuffers(gl, n, expFreq);
+      draw(mulSlider.valueAsNumber);
+    }, 300);
+  });
+  controls.appendChild(freqSlider);
 
   draw(initMul);
 }
