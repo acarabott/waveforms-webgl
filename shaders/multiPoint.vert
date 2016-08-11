@@ -1,5 +1,5 @@
 attribute vec4 a_Position;
-attribute float a_PointSize;
+uniform float a_PointSize;
 uniform float u_Mul;
 
 void main() {

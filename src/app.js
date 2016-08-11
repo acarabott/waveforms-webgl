@@ -80,7 +80,7 @@ function loadAudio (url) {
 
 let draw;
 function main() {
-  const a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
+  const u_PointSize = gl.getUniformLocation(gl.program, 'u_PointSize');
   const u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
   const u_Mul = gl.getUniformLocation(gl.program, 'u_Mul');
   const initFreq = 40;
@@ -97,7 +97,7 @@ function main() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     // set point attributes
-    gl.vertexAttrib1f(a_PointSize, pointSize);
+    gl.vertexAttrib1f(u_PointSize, pointSize);
     gl.uniform4f(u_FragColor, 0.0, 0.4, 0.8, 0.9);
 
     // apply mul
