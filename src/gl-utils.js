@@ -11,10 +11,11 @@ function initShaders (gl, vshader, fshader) {
   return true;
 }
 
-function loadShaderSrc (url) {
+function loadResource (url, responseType="") {
   return new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
     request.open('GET', url);
+    request.responseType = responseType;
     request.onload = () => {
       if (request.status === 200) {
         resolve(request.response);
@@ -91,7 +92,7 @@ function setupGl(gl, shaderUrls) {
   const srcs = {};
   const promises = Object.keys(shaderUrls).map(key => {
     const url = shaderUrls[key];
-    return loadShaderSrc(url).then(
+    return loadResource(url).then(
       src => srcs[key] = src,
       error => console.log(error)
     );
