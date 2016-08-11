@@ -119,7 +119,7 @@ function main() {
     gl.uniform1f(u_Mul, mul);
 
     // draw
-    gl.drawArrays(gl.POINTS, 0, n);
+    gl.drawArrays(gl.LINE_STRIP, 0, n);
   };
 
   const mulSlider = makeSlider(0.0, 1.0, initMul, 0.001, event => {
