@@ -34,8 +34,10 @@ function generateSine(n, freq) {
   });
 }
 
-function createVerticesFromAudio(audioBuffer, numVerts) {
-  const audioData = audioBuffer.getChannelData(0);
+function createVerticesFromAudio(audioBuffer, startFrame=0, numFrames=Infinity,
+    numVerts) {
+  const endFrame = startFrame + Math.min(audioBuffer.length, numFrames);
+  const audioData = audioBuffer.getChannelData(0).slice(startFrame, endFrame);
   numVerts = numVerts === undefined ? audioData.length : numVerts;
   const numPoints = numVerts * 2;
   const ratio = audioData.length / numVerts;
@@ -98,7 +100,7 @@ function main() {
   const u_Mul = gl.getUniformLocation(gl.program, 'u_Mul');
   const initFreq = 40;
   // const vertices = generateSine(canvas.width * canvas.height, initFreq);
-  const vertices = createVerticesFromAudio(g_audioBuffer, canvas.width);
+  const vertices = createVerticesFromAudio(g_audioBuffer, 0, 1000, canvas.width);
   const n = vertices.length / 2;
   const pointSize = Math.max(2.0, canvas.width / n);
   const initMul = 1.0;
