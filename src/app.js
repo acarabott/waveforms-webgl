@@ -3,6 +3,8 @@ canvas.width = 800;
 canvas.height = 400;
 document.body.appendChild(canvas);
 
+const audio = new AudioContext();
+
 const controls = document.createElement('div');
 document.body.appendChild(controls);
 
@@ -12,23 +14,34 @@ const shaders = {
   'frag': 'shaders/multiPoint.frag'
 };
 
-const g_points = [];
+let g_audioBuffer;
 
-function initVertexBuffers (gl, n, freq) {
-  const vertices = new Float32Array(Array.from(Array(n * 2)).map((x, i) => {
-    const vertexNum = Math.floor(i / 2);
-    return i % 2 === 0 ? ((vertexNum / n) * 2.0) - 1.0      // x co-ordinate
-                       : Math.sin((i / n) * Math.PI * freq);  // y co-ordinate
-  }));
+function initVertexBuffers(gl, vertices) {
   const vertexBuffer = gl.createBuffer();
-
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
   const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-
   gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(a_Position);
+}
+
+function generateSine(n, freq) {
+  return new Float32Array(n * 2).map((x, i) => {
+    const vertexNum = Math.floor(i / 2);
+    return i % 2 === 0 ? ((vertexNum / n) * 2.0) - 1.0        // x co-ordinate
+                       : Math.sin((i / n) * Math.PI * freq);  // y co-ordinate
+  });
+}
+
+function createVerticesFromAudio(audioBuffer) {
+  const audioData = audioBuffer.getChannelData(0);
+  const n = 2;
+  return new Float32Array(audioBuffer.length * n).map((f, i) => {
+    const audioIdx = Math.floor(i / n);
+    return i % 2 === 0 ? ((audioIdx / audioBuffer.length) * 2.0) - 1.0  // x
+                       : audioData[audioIdx];                           // y
+  });
 }
 
 function makeSlider(min=0.0, max=1.0, value=0.5, step=0.001, action) {
@@ -43,16 +56,26 @@ function makeSlider(min=0.0, max=1.0, value=0.5, step=0.001, action) {
   return slider;
 }
 
+function loadAudio (url) {
+  return loadResource(url, 'arraybuffer')
+    .then(buffer => {
+      return audio.decodeAudioData(buffer).then(decodedBuffer => decodedBuffer);
+    })
+    .then(decodedBuffer => decodedBuffer);
+}
+
 let draw;
 function main() {
   const a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
   const u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
   const u_Mul = gl.getUniformLocation(gl.program, 'u_Mul');
-  const n = Math.floor(canvas.width * (canvas.height / 2));
   const initFreq = 40;
+  // const vertices = generateSine(canvas.width * canvas.height, initFreq);
+  const vertices = createVerticesFromAudio(g_audioBuffer);
+  const n = vertices.length / 2;
   const pointSize = canvas.width / n;
   const initMul = 1.0;
-  initVertexBuffers(gl, n, initFreq);
+  initVertexBuffers(gl, vertices);
 
   draw = (mul) => {
     // clear
@@ -67,7 +90,7 @@ function main() {
     gl.uniform1f(u_Mul, mul);
 
     // draw
-    gl.drawArrays(gl.POINTS, 0, n);
+    gl.drawArrays(gl.LINES, 0, n);
   };
 
   const mulSlider = makeSlider(0.0, 1.0, initMul, 0.001, event => {
@@ -86,7 +109,7 @@ function main() {
       const norm = val / range;
       const expFreq = (Math.pow(norm, 2) * range) + minFreq;
 
-      initVertexBuffers(gl, n, expFreq);
+      initVertexBuffers(gl, generateSine(n, expFreq));
       draw(mulSlider.valueAsNumber);
     }, 300);
   });
@@ -95,4 +118,7 @@ function main() {
   draw(initMul);
 }
 
-setupGl(gl, shaders).then(main);
+setupGl(gl, shaders)
+.then(() => loadAudio('audio/beatingsloopmono.wav'))
+.then(buffer => g_audioBuffer = buffer)
+.then(main);
