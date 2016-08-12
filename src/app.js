@@ -32,6 +32,8 @@ function generateSine(n, freq) {
   });
 }
 
+const audioVertexCache = [];
+// mono only, will take left channel of stereo files
 function createVerticesFromAudio(audioBuffer, startFrame=0, numFrames=Infinity,
     numVerts) {
   const endFrame = startFrame + Math.min(audioBuffer.length, numFrames);
@@ -41,6 +43,11 @@ function createVerticesFromAudio(audioBuffer, startFrame=0, numFrames=Infinity,
   const ratio = audioData.length / numVerts;
   const samplesPerVertex = Math.max(Math.floor(ratio), 1);
   const repeats = Math.ceil(1 / ratio);
+  const cacheKey = audioData.length - audioData.length % 10000;
+
+  if (audioVertexCache[cacheKey] !== undefined) {
+    return audioVertexCache[cacheKey];
+  }
 
   const audioPoints = samplesPerVertex === 1 ? audioData :
     new Float32Array(numVerts).map((x, i) => {
@@ -65,10 +72,13 @@ function createVerticesFromAudio(audioBuffer, startFrame=0, numFrames=Infinity,
       return sum / samplesPerVertex;
     });
 
-  return new Float32Array(numPoints).map((f, i) => {
+  const vertices = new Float32Array(numPoints).map((f, i) => {
     return i % 2 === 0 ? ((i / numPoints) * 2.0) - 1.0                // x
                        : audioPoints[Math.floor((i / repeats) / 2)];  // y
   });
+
+  audioVertexCache[cacheKey] = vertices;
+  return vertices;
 }
 
 function loadAudio (url) {
@@ -143,6 +153,6 @@ function main() {
 }
 
 setupGl(gl, shaders)
-.then(() => loadAudio('audio/beatingsloopmono.wav'))
+.then(() => loadAudio('audio/03reckonerDrums.wav'))
 .then(buffer => g_audioBuffer = buffer)
 .then(main);
