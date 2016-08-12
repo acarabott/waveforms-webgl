@@ -81,40 +81,51 @@ function loadAudio (url) {
     .then(decodedBuffer => decodedBuffer);
 }
 
-let draw;
-function main() {
-  const u_PointSize = gl.getUniformLocation(gl.program, 'u_PointSize');
+function draw (state) {
+  // clear
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  // set point attributes
   const u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+  gl.uniform4f(u_FragColor, 0.0, 0.4, 0.8, 0.9);
+
+  // apply mul
   const u_Mul = gl.getUniformLocation(gl.program, 'u_Mul');
-  const initFreq = 40;
-  // const vertices = generateSine(canvas.width * canvas.height, initFreq);
-  const vertices = createVerticesFromAudio(g_audioBuffer, 0, 1000, canvas.width);
-  const n = vertices.length / 2;
-  const pointSize = Math.max(2.0, canvas.width / n);
+  gl.uniform1f(u_Mul, state.mul);
+
+  // draw
+  gl.drawArrays(gl.LINE_STRIP, 0, state.numVerts);
+};
+
+function main() {
+  const state = {
+    freq: 40,
+    numVerts: 0,
+    mul: 1.0
+  };
+  // const vertices = generateSine(canvas.width * canvas.height, state.freq);
+  const vertices = createVerticesFromAudio(g_audioBuffer, 0,
+    g_audioBuffer.length, canvas.width);
+  state.numVerts = vertices.length / 2;
   const initMul = 1.0;
   initVertexBuffers(gl, vertices);
-
-  draw = (mul) => {
-    // clear
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    // set point attributes
-    gl.uniform1f(u_PointSize, pointSize);
-    gl.uniform4f(u_FragColor, 0.0, 0.4, 0.8, 0.9);
-
-    // apply mul
-    gl.uniform1f(u_Mul, mul);
-
-    // draw
-    gl.drawArrays(gl.LINE_STRIP, 0, n);
-  };
 
   const mulSlider = slider(0.0, 1.0, initMul, 0.001, true, event => {
     state.mul = event.target.valueAsNumber;
     draw(state);
   });
   controls.appendChild(mulSlider);
+
+  const zoomSlider = slider(1, 1000, 1, 0.1, false, event => {
+    const val = event.target.valueAsNumber;
+    const numFrames = g_audioBuffer.length / val;
+    const vertices = createVerticesFromAudio(g_audioBuffer, 0, numFrames,
+      canvas.width);
+    initVertexBuffers(gl, vertices);
+    draw(state);
+  });
+  document.body.appendChild(zoomSlider);
 
   let freqTimeout;
   const minFreq = 1;
@@ -128,12 +139,12 @@ function main() {
       const expFreq = (Math.pow(norm, 2) * range) + minFreq;
 
       initVertexBuffers(gl, generateSine(n, expFreq));
-      draw(mulSlider.valueAsNumber);
+      draw(state);
     }, 300);
   });
-  controls.appendChild(freqSlider);
+  // controls.appendChild(freqSlider);
 
-  draw(initMul);
+  draw(state);
 }
 
 setupGl(gl, shaders)
