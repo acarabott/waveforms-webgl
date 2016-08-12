@@ -10,8 +10,8 @@ document.body.appendChild(controls);
 
 const gl = canvas.getContext('webgl');
 const shaders = {
-  'vert': 'shaders/multiPoint.vert',
-  'frag': 'shaders/multiPoint.frag'
+  'vert': 'shaders/shader.vert',
+  'frag': 'shaders/shader.frag'
 };
 
 let g_audioBuffer;
