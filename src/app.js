@@ -2,11 +2,9 @@ const canvas = document.createElement('canvas');
 canvas.width = 800;
 canvas.height = 400;
 document.body.appendChild(canvas);
+document.body.appendChild(controlsContainer); // from ui-utils.js, nasty global
 
 const audio = new AudioContext();
-
-const controls = document.createElement('div');
-document.body.appendChild(controls);
 
 const gl = canvas.getContext('webgl');
 const shaders = {
@@ -111,13 +109,12 @@ function main() {
   const initMul = 1.0;
   initVertexBuffers(gl, vertices);
 
-  const mulSlider = slider(0.0, 1.0, initMul, 0.001, true, event => {
+  makeSlider('mul', 0.0, 1.0, initMul, 0.001, true, event => {
     state.mul = event.target.valueAsNumber;
     draw(state);
   });
-  controls.appendChild(mulSlider);
 
-  const zoomSlider = slider(1, 1000, 1, 0.1, false, event => {
+  makeSlider('zoom', 1, 1000, 1, 0.1, false, event => {
     const val = event.target.valueAsNumber;
     const numFrames = g_audioBuffer.length / val;
     const vertices = createVerticesFromAudio(g_audioBuffer, 0, numFrames,
@@ -125,24 +122,22 @@ function main() {
     initVertexBuffers(gl, vertices);
     draw(state);
   });
-  document.body.appendChild(zoomSlider);
 
-  let freqTimeout;
-  const minFreq = 1;
-  const maxFreq = 40;
-  const freqSlider = slider(minFreq, maxFreq, state.freq, 0.01, true, event => {
-    clearTimeout(freqTimeout);
-    freqTimeout = setTimeout(() => {
-      const val = event.target.valueAsNumber;
-      const range = maxFreq - minFreq;
-      const norm = val / range;
-      const expFreq = (Math.pow(norm, 2) * range) + minFreq;
+  // let freqTimeout;
+  // const minFreq = 1;
+  // const maxFreq = 40;
+  // makeSlider('freq', minFreq, maxFreq, state.freq, 0.01, true, event => {
+  //   clearTimeout(freqTimeout);
+  //   freqTimeout = setTimeout(() => {
+  //     const val = event.target.valueAsNumber;
+  //     const range = maxFreq - minFreq;
+  //     const norm = val / range;
+  //     const expFreq = (Math.pow(norm, 2) * range) + minFreq;
 
-      initVertexBuffers(gl, generateSine(n, expFreq));
-      draw(state);
-    }, 300);
-  });
-  // controls.appendChild(freqSlider);
+  //     initVertexBuffers(gl, generateSine(n, expFreq));
+  //     draw(state);
+  //   }, 300);
+  // });
 
   draw(state);
 }
