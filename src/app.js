@@ -73,18 +73,6 @@ function createVerticesFromAudio(audioBuffer, startFrame=0, numFrames=Infinity,
   });
 }
 
-function makeSlider(min=0.0, max=1.0, value=0.5, step=0.001, action) {
-  const slider = document.createElement('input');
-  slider.type = 'range';
-  slider.style['-webkit-appearance'] = 'slider-vertical';
-  slider.min = min;
-  slider.max = max;
-  slider.value = value;
-  slider.step = step;
-  slider.addEventListener('input', action);
-  return slider;
-}
-
 function loadAudio (url) {
   return loadResource(url, 'arraybuffer')
     .then(buffer => {
@@ -122,15 +110,16 @@ function main() {
     gl.drawArrays(gl.LINE_STRIP, 0, n);
   };
 
-  const mulSlider = makeSlider(0.0, 1.0, initMul, 0.001, event => {
-    draw(event.target.valueAsNumber)
+  const mulSlider = slider(0.0, 1.0, initMul, 0.001, true, event => {
+    state.mul = event.target.valueAsNumber;
+    draw(state);
   });
   controls.appendChild(mulSlider);
 
   let freqTimeout;
   const minFreq = 1;
   const maxFreq = 40;
-  const freqSlider = makeSlider(minFreq, maxFreq, initFreq, 0.01, event => {
+  const freqSlider = slider(minFreq, maxFreq, state.freq, 0.01, true, event => {
     clearTimeout(freqTimeout);
     freqTimeout = setTimeout(() => {
       const val = event.target.valueAsNumber;
