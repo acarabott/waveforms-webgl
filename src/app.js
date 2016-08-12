@@ -32,6 +32,23 @@ function generateSine(n, freq) {
   });
 }
 
+function testStripVertices () {
+  const audioData = new Float32Array([0.0, 0.5, 0.4, 0.1, 0.0]).map(x => x);
+  const numVertices = audioData.length * 4;
+  const vertices = new Float32Array(numVertices);
+  const start = 0.0;
+  const end = 1.0;
+  const step = (end - start) / (audioData.length -1);
+  audioData.forEach((s, i) => {
+    const x = ((i * step) * 2.0) - 1.0;
+    vertices[i * 4 + 0] = x;
+    vertices[i * 4 + 1] = s;
+    vertices[i * 4 + 2] = x;
+    vertices[i * 4 + 3] = 0.0
+  });
+  return vertices;
+}
+
 const audioVertexCache = [];
 // mono only, will take left channel of stereo files
 function createVerticesFromAudio(audioBuffer, startFrame=0, numFrames=Infinity,
@@ -103,7 +120,7 @@ function draw (state) {
   gl.uniform1f(u_Mul, state.mul);
 
   // draw
-  gl.drawArrays(gl.LINE_STRIP, 0, state.numVerts);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, state.numVerts);
 };
 
 function main() {
@@ -113,8 +130,9 @@ function main() {
     mul: 1.0
   };
   // const vertices = generateSine(canvas.width * canvas.height, state.freq);
-  const vertices = createVerticesFromAudio(g_audioBuffer, 0,
-    g_audioBuffer.length, canvas.width);
+  // const vertices = createVerticesFromAudio(g_audioBuffer, 0,
+  //   g_audioBuffer.length, canvas.width);
+  const vertices = testStripVertices();
   state.numVerts = vertices.length / 2;
   const initMul = 1.0;
   initVertexBuffers(gl, vertices);
