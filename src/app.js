@@ -41,13 +41,13 @@ function createVerticesFromAudio(audioBuffer, startFrame=0, numFrames=Infinity,
   numVerts = numVerts === undefined ? audioData.length : numVerts;
   const numPoints = numVerts * 2;
   const ratio = audioData.length / numVerts;
-  const step = Math.max(Math.floor(ratio), 1);
+  const samplesPerVertex = Math.max(Math.floor(ratio), 1);
   const repeats = Math.ceil(1 / ratio);
 
-  const audioPoints = step === 1 ? audioData :
+  const audioPoints = samplesPerVertex === 1 ? audioData :
     new Float32Array(numVerts).map((x, i) => {
-      const start = i * step;
-      const end = start + step;
+      const start = i * samplesPerVertex;
+      const end = start + samplesPerVertex;
       const bin = audioData.slice(start, end);
       let maxIdx = 0;
       let maxAbs = 0.0;
@@ -64,7 +64,7 @@ function createVerticesFromAudio(audioBuffer, startFrame=0, numFrames=Infinity,
         return prev + cur;
       }, 0);
 
-      return sum / step;
+      return sum / samplesPerVertex;
     });
 
   return new Float32Array(numPoints).map((f, i) => {
