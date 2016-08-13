@@ -108,3 +108,14 @@ function setupGl(gl, shaderUrls) {
     console.log('failed to load shaders');
   });
 }
+
+function linlin(val, inMin, inMax, outMin=0.0, outMax=1.0) {
+  const inRange = inMax - inMin;
+  const norm = val / inRange;
+  const outRange = outMax - outMin;
+  return outMin + (norm * outRange);
+}
+
+function lingl (val, inMin, inMax) {
+  return linlin(val, inMin, inMax, -1.0, 1.0);
+}

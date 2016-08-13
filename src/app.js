@@ -32,20 +32,55 @@ function generateSine(n, freq) {
   });
 }
 
+
 function testStripVertices () {
-  const audioData = new Float32Array([0.0, 0.5, 0.4, 0.1, 0.0]).map(x => x);
-  const numVertices = audioData.length * 4;
-  const vertices = new Float32Array(numVertices);
-  const start = 0.0;
+  const audioData = new Float32Array([0.0, 0.5, 0.6, 0.1, -0.1, -0.3, 0.3, 0.4]);
+  const coordsPerSample = 12;
+  const numVertices = audioData.length * coordsPerSample;
+  const vertices = new Float32Array(numVertices).map(x => -2.0);
+  const start = -1.0;
   const end = 1.0;
-  const step = (end - start) / (audioData.length -1);
+  const step = (end - start) / (audioData.length);
+
   audioData.forEach((s, i) => {
-    const x = ((i * step) * 2.0) - 1.0;
-    vertices[i * 4 + 0] = x;
-    vertices[i * 4 + 1] = s;
-    vertices[i * 4 + 2] = x;
-    vertices[i * 4 + 3] = 0.0
+    const isLastSample = i === audioData.length - 1;
+    const ns = isLastSample ? s : audioData[i + 1];
+    const nextIsOpposite = isLastSample ? false : (s > 0 && ns < 0) ||
+                                                  (s < 0 && ns > 0);
+    const proportion = nextIsOpposite ? Math.abs(s) / (Math.abs(s) + Math.abs(ns))
+                                    : 1.0;
+    // triangle 0
+    const t0x0 = lingl(i, 0, audioData.length);
+    const t0y0 = s;
+    const t0x1 = t0x0;
+    const t0y1 = 0.0;
+    const t0x2 = t0x0 + (step * proportion);
+    const t0y2 = nextIsOpposite ? 0.0 : ns;
+    // triangle 1
+    const t1x0 = t0x0 + step;
+    const t1y0 = ns;
+    const t1x1 = t1x0;
+    const t1y1 = 0.0;
+    const t1x2 = nextIsOpposite ? t0x2 : t0x0;
+    const t1y2 = nextIsOpposite ? t0y2 : t0y1;
+
+    // triangle 0
+    vertices[i * coordsPerSample + 0] = t0x0;
+    vertices[i * coordsPerSample + 1] = t0y0;
+    vertices[i * coordsPerSample + 2] = t0x1;
+    vertices[i * coordsPerSample + 3] = t0y1;
+    vertices[i * coordsPerSample + 4] = t0x2;
+    vertices[i * coordsPerSample + 5] = t0y2;
+    // triangle 1
+    vertices[i * coordsPerSample +  6] = t1x0;
+    vertices[i * coordsPerSample +  7] = t1y0;
+    vertices[i * coordsPerSample +  8] = t1x1;
+    vertices[i * coordsPerSample +  9] = t1y1;
+    vertices[i * coordsPerSample + 10] = t1x2;
+    vertices[i * coordsPerSample + 11] = t1y2;
+
   });
+
   return vertices;
 }
 
@@ -120,7 +155,7 @@ function draw (state) {
   gl.uniform1f(u_Mul, state.mul);
 
   // draw
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, state.numVerts);
+  gl.drawArrays(gl.TRIANGLES, 0, state.numVerts);
 };
 
 function main() {
