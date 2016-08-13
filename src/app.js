@@ -65,25 +65,17 @@ function testStripVertices() {
     // triangle 1
     const t1x0 = t0x0 + step;
     const t1y0 = nextSample;
-    const t1x1 = t1x0;
+    const t1x1 = t0x0 + step;
     const t1y1 = 0.0;
     const t1x2 = nextIsOpposite ? t0x2 : t0x0;
     const t1y2 = nextIsOpposite ? t0y2 : t0y1;
 
-    // triangle 0
-    vertices[i * coordsPerSample + 0] = t0x0;
-    vertices[i * coordsPerSample + 1] = t0y0;
-    vertices[i * coordsPerSample + 2] = t0x1;
-    vertices[i * coordsPerSample + 3] = t0y1;
-    vertices[i * coordsPerSample + 4] = t0x2;
-    vertices[i * coordsPerSample + 5] = t0y2;
-    // triangle 1
-    vertices[i * coordsPerSample +  6] = t1x0;
-    vertices[i * coordsPerSample +  7] = t1y0;
-    vertices[i * coordsPerSample +  8] = t1x1;
-    vertices[i * coordsPerSample +  9] = t1y1;
-    vertices[i * coordsPerSample + 10] = t1x2;
-    vertices[i * coordsPerSample + 11] = t1y2;
+    [
+      t0x0, t0y0, t0x1, t0y1, t0x2, t0y2,
+      t1x0, t1y0, t1x1, t1y1, t1x2, t1y2
+    ].forEach((coord, j) => {
+      vertices[i * coordsPerSample + j] = coord;
+    });
   });
 
   return vertices;
