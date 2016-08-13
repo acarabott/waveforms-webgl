@@ -33,32 +33,38 @@ function generateSine(n, freq) {
 }
 
 
-function testStripVertices () {
-  const audioData = new Float32Array([0.0, 0.5, 0.6, 0.1, -0.1, -0.3, 0.3, 0.4]);
+function testStripVertices() {
+  const audioData = new Float32Array([0.0, 0.5, 0.6, 0.1, -0.1, -0.3, 0.3, 0.4, 0.0]);
   const coordsPerSample = 12;
-  const numVertices = audioData.length * coordsPerSample;
-  const vertices = new Float32Array(numVertices).map(x => -2.0);
+  const vertices = new Float32Array((audioData.length - 1) * coordsPerSample);
   const start = -1.0;
   const end = 1.0;
-  const step = (end - start) / (audioData.length);
+  const step = (end - start) / (audioData.length - 1);
 
-  audioData.forEach((s, i) => {
+  audioData.forEach((sample, i) => {
     const isLastSample = i === audioData.length - 1;
-    const ns = isLastSample ? s : audioData[i + 1];
-    const nextIsOpposite = isLastSample ? false : (s > 0 && ns < 0) ||
-                                                  (s < 0 && ns > 0);
-    const proportion = nextIsOpposite ? Math.abs(s) / (Math.abs(s) + Math.abs(ns))
-                                    : 1.0;
+    const nextSample = isLastSample ? sample : audioData[i + 1];
+    // if the current sample is positive, is the next negative (and vice versa)
+    const nextIsOpposite = isLastSample ?
+      false :
+      (sample > 0 && nextSample < 0) || (sample < 0 && nextSample > 0);
+    // calculate zero crossing if swapping between pos <-> neg
+    // calculated as percentage between sample x positions
+    const proportion = nextIsOpposite ?
+      Math.abs(sample) / (Math.abs(sample) + Math.abs(nextSample)) :
+      1.0;
+
+    // calculate points
     // triangle 0
-    const t0x0 = lingl(i, 0, audioData.length);
-    const t0y0 = s;
+    const t0x0 = lingl(i, 0, audioData.length - 1);
+    const t0y0 = sample;
     const t0x1 = t0x0;
     const t0y1 = 0.0;
     const t0x2 = t0x0 + (step * proportion);
-    const t0y2 = nextIsOpposite ? 0.0 : ns;
+    const t0y2 = nextIsOpposite ? 0.0 : nextSample;
     // triangle 1
     const t1x0 = t0x0 + step;
-    const t1y0 = ns;
+    const t1y0 = nextSample;
     const t1x1 = t1x0;
     const t1y1 = 0.0;
     const t1x2 = nextIsOpposite ? t0x2 : t0x0;
@@ -78,7 +84,6 @@ function testStripVertices () {
     vertices[i * coordsPerSample +  9] = t1y1;
     vertices[i * coordsPerSample + 10] = t1x2;
     vertices[i * coordsPerSample + 11] = t1y2;
-
   });
 
   return vertices;
