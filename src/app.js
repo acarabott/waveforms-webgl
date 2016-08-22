@@ -32,9 +32,8 @@ function generateSine(n, freq) {
   });
 }
 
-
-function testStripVertices() {
-  const audioData = new Float32Array([0.0, 0.5, 0.6, 0.1, -0.1, -0.3, 0.3, 0.4, 0.0]);
+function testStripVertices(audioData) {
+  // const audioData = new Float32Array([0.0, 0.5, 0.6, 0.1, -0.1, -0.3, 0.3, 0.4, 0.0]);
   const coordsPerSample = 12;
   const vertices = new Float32Array((audioData.length - 1) * coordsPerSample);
   const start = -1.0;
@@ -164,7 +163,7 @@ function main() {
   // const vertices = generateSine(canvas.width * canvas.height, state.freq);
   // const vertices = createVerticesFromAudio(g_audioBuffer, 0,
   //   g_audioBuffer.length, canvas.width);
-  const vertices = testStripVertices();
+  const vertices = testStripVertices(g_audioBuffer.getChannelData(0));
   state.numVerts = vertices.length / 2;
   const initMul = 1.0;
   initVertexBuffers(gl, vertices);
