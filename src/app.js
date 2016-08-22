@@ -1,5 +1,5 @@
 const canvas = document.createElement('canvas');
-canvas.width = 800;
+canvas.width = 1900;
 canvas.height = 400;
 document.body.appendChild(canvas);
 document.body.appendChild(controlsContainer); // from ui-utils.js, nasty global
